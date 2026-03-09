@@ -11,35 +11,18 @@ const AaveLogo = () => (
   </svg>
 );
 
-const GUARDIAN_NAV = [
-  { label: "Dashboard", id: "dashboard" },
-  { label: "Positions", id: "positions" },
-  { label: "Evacuations", id: "evacuations" },
-];
-
-const YIELD_NAV = [
-  { label: "Dashboard", id: "dashboard" },
-  { label: "Scanner", id: "scanner" },
-  { label: "Position", id: "position" },
-  { label: "History", id: "history" },
-];
 
 export default function Sidebar({
-  active,
-  onNavigate,
   mode,
   onModeChange,
   simulationMode,
   onSimulationModeChange,
 }: {
-  active: string;
-  onNavigate: (id: string) => void;
   mode: "guardian" | "yield";
   onModeChange: (mode: "guardian" | "yield") => void;
   simulationMode: "DRY_RUN" | "LIVE";
   onSimulationModeChange: (mode: "DRY_RUN" | "LIVE") => void;
 }) {
-  const navItems = mode === "guardian" ? GUARDIAN_NAV : YIELD_NAV;
   const isYield = mode === "yield";
   const isLive = simulationMode === "LIVE";
 
@@ -67,7 +50,7 @@ export default function Sidebar({
       <div style={{ padding: "0 12px 12px" }}>
         <div style={{ display: "flex", background: "var(--bg-base)", borderRadius: 10, padding: 3, gap: 2 }}>
           <button
-            onClick={() => { onModeChange("yield"); onNavigate("dashboard"); }}
+            onClick={() => onModeChange("yield")}
             style={{
               flex: 1,
               padding: "7px 8px",
@@ -87,7 +70,7 @@ export default function Sidebar({
             Yielder
           </button>
           <button
-            onClick={() => { onModeChange("guardian"); onNavigate("dashboard"); }}
+            onClick={() => onModeChange("guardian")}
             style={{
               flex: 1,
               padding: "7px 8px",
@@ -108,18 +91,8 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-0.5">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className={`nav-item ${active === item.id ? (isYield ? "active-yield" : "active") : ""}`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Execution mode toggle */}
       <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border)" }}>

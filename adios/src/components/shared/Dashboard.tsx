@@ -55,7 +55,6 @@ const INITIAL_YIELD: YieldAgentState = {
 export default function Dashboard() {
   const [guardianState, setGuardianState] = useState<AgentState>(INITIAL_GUARDIAN);
   const [yieldState, setYieldState] = useState<YieldAgentState>(INITIAL_YIELD);
-  const [activeNav, setActiveNav] = useState("dashboard");
   const [mode, setMode] = useState<"guardian" | "yield">("yield");
   const [simulationMode, setSimulationMode] = useState<"DRY_RUN" | "LIVE">("DRY_RUN");
   const [leftOpen, setLeftOpen] = useState(true);
@@ -153,10 +152,8 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-y-auto overflow-x-hidden" style={{ background: "var(--bg-deep)", color: "var(--text-primary)" }}>
       {leftOpen && (
         <Sidebar
-          active={activeNav}
-          onNavigate={setActiveNav}
           mode={mode}
-          onModeChange={(m) => { setMode(m); setActiveNav("dashboard"); }}
+          onModeChange={setMode}
           simulationMode={simulationMode}
           onSimulationModeChange={handleSimulationModeChange}
         />

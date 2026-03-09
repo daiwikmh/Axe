@@ -34,6 +34,14 @@ const PROJECT_LABELS: Record<string, string> = {
   "ionic-protocol": "Ionic",
 };
 
+// Lower = more preferred. Polygon (137) is least preferred.
+const CHAIN_PREFERENCE: Record<number, number> = {
+  8453: 1,  // Base
+  42161: 2, // Arbitrum
+  10: 3,    // Optimism
+  137: 4,   // Polygon
+};
+
 let cache: { data: YieldPool[]; ts: number } | null = null;
 
 export async function scanYields(): Promise<YieldPool[]> {

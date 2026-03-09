@@ -8,11 +8,11 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, base, arbitrum, optimism, polygon } from "viem/chains";
 import { getRoutes, executeRoute } from "@lifi/sdk";
-import { initLiFi } from "./lifiClient";
+import { initLiFi } from "../shared/lifiClient";
 import {
   NONFUNGIBLE_POSITION_MANAGER_ABI,
   POSITION_MANAGER_ADDRESS,
-} from "./abi/nonfungiblePositionManager";
+} from "../abi/nonfungiblePositionManager";
 import type { EvacuationResult, BridgeRoute, LogEntry } from "@/types";
 
 const CHAIN_MAP: Record<number, Chain> = {
@@ -69,7 +69,7 @@ export class EvacuationExecutor {
       : null;
 
     // Configure LI.FI SDK (shared singleton)
-    initLiFi(privateKey, chainId, rpcUrl);
+    initLiFi(privateKey, chainId);
 
     this.onLog = onLog ?? (() => {});
   }

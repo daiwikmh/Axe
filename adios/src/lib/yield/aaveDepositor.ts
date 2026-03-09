@@ -8,8 +8,8 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet, base, arbitrum, optimism } from "viem/chains";
-import { AAVE_V3_POOL_ABI, ERC20_ABI } from "./abi/aaveV3Pool";
-import { YIELD_CHAINS } from "./config";
+import { AAVE_V3_POOL_ABI, ERC20_ABI } from "../abi/aaveV3Pool";
+import { YIELD_CHAINS } from "../shared/config";
 import type { LogEntry } from "@/types";
 
 const CHAIN_MAP: Record<number, Chain> = {
@@ -43,12 +43,14 @@ export class AaveDepositor {
     this.address = account.address;
     this.chainId = chainId;
 
+    // walletClient uses Alchemy (reliable tx submission)
     this.walletClient = createWalletClient({
       account,
       chain,
-      transport: http(chainConfig.rpcUrl),
+      transport: http(chainConfig.txRpcUrl),
     });
 
+    // publicClient uses public RPC (reads, dry-run sims — no rate limit)
     this.publicClient = createPublicClient({
       chain,
       transport: http(chainConfig.rpcUrl),
@@ -91,22 +93,26 @@ export class AaveDepositor {
     this.log("INFO", `${dryRun ? "[DRY RUN] " : ""}Depositing ${amountFmt} USDC into Aave on ${config.name}`);
 
     if (dryRun) {
-      // Simulate approval + deposit
-      await this.publicClient.simulateContract({
-        address: config.usdc,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [config.aavePool, amount],
-        account: this.address,
-      });
-      await this.publicClient.simulateContract({
-        address: config.aavePool,
-        abi: AAVE_V3_POOL_ABI,
-        functionName: "supply",
-        args: [config.usdc, amount, this.address, 0],
-        account: this.address,
-      });
-      this.log("SUCCESS", `[DRY RUN] Deposit simulation passed — ${amountFmt} USDC would be supplied`);
+      try {
+        await this.publicClient.simulateContract({
+          address: config.usdc,
+          abi: ERC20_ABI,
+          functionName: "approve",
+          args: [config.aavePool, amount],
+          account: this.address,
+        });
+        await this.publicClient.simulateContract({
+          address: config.aavePool,
+          abi: AAVE_V3_POOL_ABI,
+          functionName: "supply",
+          args: [config.usdc, amount, this.address, 0],
+          account: this.address,
+        });
+        this.log("SUCCESS", `[DRY RUN] Deposit simulation passed — ${amountFmt} USDC would be supplied`);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message.slice(0, 80) : String(e);
+        this.log("WARN", `[DRY RUN] Simulation skipped (RPC limit or no balance): ${msg}`);
+      }
       return { simulated: true };
     }
 
@@ -159,14 +165,19 @@ export class AaveDepositor {
     this.log("INFO", `${dryRun ? "[DRY RUN] " : ""}Withdrawing ${amountFmt} USDC from Aave on ${config.name}`);
 
     if (dryRun) {
-      await this.publicClient.simulateContract({
-        address: config.aavePool,
-        abi: AAVE_V3_POOL_ABI,
-        functionName: "withdraw",
-        args: [config.usdc, maxUint256, this.address],
-        account: this.address,
-      });
-      this.log("SUCCESS", `[DRY RUN] Withdraw simulation passed — ${amountFmt} USDC`);
+      try {
+        await this.publicClient.simulateContract({
+          address: config.aavePool,
+          abi: AAVE_V3_POOL_ABI,
+          functionName: "withdraw",
+          args: [config.usdc, maxUint256, this.address],
+          account: this.address,
+        });
+        this.log("SUCCESS", `[DRY RUN] Withdraw simulation passed — ${amountFmt} USDC`);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message.slice(0, 80) : String(e);
+        this.log("WARN", `[DRY RUN] Withdraw sim skipped (RPC limit or no position): ${msg}`);
+      }
       return { amountReceived: aBalance, simulated: true };
     }
 

@@ -1,4 +1,4 @@
-import { DEFI_LLAMA_CHAIN_MAP } from "./config";
+import { DEFI_LLAMA_CHAIN_MAP } from "../shared/config";
 import type { YieldPool } from "@/types";
 
 const DEFI_LLAMA_URL = "https://yields.llama.fi/pools";

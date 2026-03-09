@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle, XCircle } from "lucide-react";
 import type { EvacuationResult } from "@/types";
-import { SUPPORTED_CHAINS } from "@/lib/config";
+import { SUPPORTED_CHAINS } from "@/lib/shared/config";
 
 export default function EvacuationPanel({ evacuations }: { evacuations: EvacuationResult[] }) {
   return (

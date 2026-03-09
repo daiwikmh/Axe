@@ -2,9 +2,9 @@ import { scanYields, getBestYield, shouldMove } from "./yieldScanner";
 import { AaveDepositor } from "./aaveDepositor";
 import { YieldBridge } from "./yieldBridge";
 import { getYieldDecision } from "./yieldLlm";
-import { YIELD_CHAINS, MIN_APY_DIFF_TO_MOVE } from "./config";
+import { YIELD_CHAINS, MIN_APY_DIFF_TO_MOVE } from "../shared/config";
 import { privateKeyToAccount } from "viem/accounts";
-import type { YieldAgentState, LogEntry, YieldPool } from "@/types";
+import type { YieldAgentState, LogEntry, YieldPool, ChainBalance } from "@/types";
 
 let state: YieldAgentState = {
   status: "IDLE",
@@ -18,7 +18,43 @@ let state: YieldAgentState = {
   scansPerformed: 0,
   movesPerformed: 0,
   moveHistory: [],
+  simulatedMoves: [],
+  liveMoves: [],
+  walletBalances: {},
+  totalBalance: "0",
+  allocatedAmount: "0",
+  agentAddress: "",
 };
+
+let agentPrivateKey: string | null = null;
+let lastBalanceRefresh = 0;
+const BALANCE_REFRESH_INTERVAL = 120_000; // 2 min minimum between refreshes
+
+async function refreshBalances() {
+  if (Date.now() - lastBalanceRefresh < BALANCE_REFRESH_INTERVAL) return;
+  lastBalanceRefresh = Date.now();
+  if (!agentPrivateKey) return;
+  const balances: Record<number, ChainBalance> = {};
+  let total = 0n;
+  for (const chainId of Object.keys(YIELD_CHAINS).map(Number)) {
+    try {
+      const dep = new AaveDepositor(agentPrivateKey, chainId);
+      const usdc = await dep.getUsdcBalance();
+      const aToken = await dep.getATokenBalance();
+      const chainTotal = usdc + aToken;
+      balances[chainId] = {
+        usdc: usdc.toString(),
+        aToken: aToken.toString(),
+        total: chainTotal.toString(),
+      };
+      total += chainTotal;
+    } catch {
+      balances[chainId] = { usdc: "0", aToken: "0", total: "0" };
+    }
+  }
+  state.walletBalances = balances;
+  state.totalBalance = total.toString();
+}
 
 let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -49,7 +85,29 @@ export function resetYieldAgent() {
     scansPerformed: 0,
     movesPerformed: 0,
     moveHistory: [],
+    simulatedMoves: [],
+    liveMoves: [],
+    walletBalances: state.walletBalances,
+    totalBalance: state.totalBalance,
+    allocatedAmount: state.allocatedAmount,
+    agentAddress: state.agentAddress,
   };
+}
+
+export function setAllocation(amountUsdc: string) {
+  // amountUsdc is a human-readable string like "1.5", stored as raw 6-decimal bigint string
+  const raw = BigInt(Math.round(parseFloat(amountUsdc) * 1_000_000)).toString();
+  state.allocatedAmount = raw;
+  addLog({
+    timestamp: Date.now(),
+    level: "INFO",
+    message: `Allocation set to ${parseFloat(amountUsdc).toFixed(4)} USDC`,
+  });
+}
+
+export async function fetchAgentBalances() {
+  lastBalanceRefresh = 0; // bypass throttle for manual refresh
+  await refreshBalances();
 }
 
 export function setYieldMode(mode: "DRY_RUN" | "LIVE") {
@@ -71,9 +129,16 @@ export function startYieldAgent(config: {
     return;
   }
 
+  agentPrivateKey = config.privateKey;
   state.mode = config.mode;
   state.status = "MONITORING";
   state.uptime = Date.now();
+  state.agentAddress = privateKeyToAccount(
+    (config.privateKey.startsWith("0x") ? config.privateKey : `0x${config.privateKey}`) as `0x${string}`
+  ).address;
+
+  // Fetch balances immediately on start
+  refreshBalances().catch(() => {});
 
   const account = privateKeyToAccount(
     (config.privateKey.startsWith("0x") ? config.privateKey : `0x${config.privateKey}`) as `0x${string}`
@@ -100,6 +165,9 @@ export function startYieldAgent(config: {
       // ── SCAN ──
       state.status = "SCANNING";
       addLog({ timestamp: Date.now(), level: "INFO", message: "Scanning USDC yields across chains..." });
+
+      // Refresh wallet balances in background
+      refreshBalances().catch(() => {});
 
       const yields: YieldPool[] = await scanYields();
       state.lastYields = yields;
@@ -177,25 +245,42 @@ export function startYieldAgent(config: {
       // ── WITHDRAW (if deposited somewhere) ──
       let availableAmount: bigint;
 
+      // Use allocated amount if set, otherwise full balance
+      const allocated = BigInt(state.allocatedAmount ?? "0");
+      const DRY_RUN_DEMO_AMOUNT = allocated > 0n ? allocated : 1_000_000n; // default 1 USDC
+
       if (state.currentPosition && state.currentPosition.chainId !== decision.targetChainId) {
         state.status = "WITHDRAWING";
         const depositor = new AaveDepositor(config.privateKey, state.currentPosition.chainId, (l) => addLog(l));
         const withdrawResult = await depositor.withdraw(dryRun);
         availableAmount = withdrawResult.amountReceived;
+        // In dry run, use demo amount if no real aToken balance
+        if (dryRun && availableAmount === 0n) {
+          availableAmount = DRY_RUN_DEMO_AMOUNT;
+          addLog({ timestamp: Date.now(), level: "INFO", message: "[DRY RUN] No aToken balance — simulating with 1.0000 USDC" });
+        }
       } else {
         // Not deposited — check USDC balance on source chain
-        const sourceChainId = state.currentPosition?.chainId ?? 8453; // default Base
+        const sourceChainId = state.currentPosition?.chainId ?? 8453;
         const depositor = new AaveDepositor(config.privateKey, sourceChainId, (l) => addLog(l));
-        availableAmount = await depositor.getUsdcBalance();
+        const rawBalance = await depositor.getUsdcBalance();
+        // Cap to allocated amount if set
+        availableAmount = allocated > 0n && rawBalance > allocated ? allocated : rawBalance;
         addLog({
           timestamp: Date.now(),
           level: "INFO",
-          message: `USDC balance on ${YIELD_CHAINS[sourceChainId]?.name}: ${(Number(availableAmount) / 1e6).toFixed(4)}`,
+          message: `USDC balance on ${YIELD_CHAINS[sourceChainId]?.name}: ${(Number(rawBalance) / 1e6).toFixed(4)}${allocated > 0n ? ` (allocated: ${(Number(allocated) / 1e6).toFixed(4)})` : ""}`,
         });
+        // In dry run, always proceed with demo amount so the full simulation runs
+        if (dryRun && availableAmount === 0n) {
+          availableAmount = DRY_RUN_DEMO_AMOUNT;
+          addLog({ timestamp: Date.now(), level: "INFO", message: "[DRY RUN] No balance — simulating with 1.0000 USDC demo amount" });
+        }
       }
 
       if (availableAmount === 0n) {
-        addLog({ timestamp: Date.now(), level: "ERROR", message: "No USDC available to move" });
+        // Only blocks in LIVE mode — in dry run we always have demo amount
+        addLog({ timestamp: Date.now(), level: "ERROR", message: "No USDC available to move (switch to DRY RUN to simulate)" });
         state.status = "MONITORING";
         return;
       }
@@ -254,7 +339,7 @@ export function startYieldAgent(config: {
 
       // ── RECORD ──
       state.movesPerformed++;
-      state.moveHistory.push({
+      const moveRecord = {
         success: true,
         fromChain: fromChainId,
         toChain: decision.targetChainId,
@@ -264,7 +349,13 @@ export function startYieldAgent(config: {
         newApy: best.apyTotal,
         timestamp: Date.now(),
         dryRun,
-      });
+      };
+      state.moveHistory.push(moveRecord);
+      if (dryRun) {
+        state.simulatedMoves.push(moveRecord);
+      } else {
+        state.liveMoves.push(moveRecord);
+      }
 
       addLog({
         timestamp: Date.now(),

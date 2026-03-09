@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { wagmiConfig } from "@/lib/wagmi";
+import { wagmiConfig } from "@/lib/shared/wagmi";
 import { useState } from "react";
 
 export default function Providers({ children }: { children: React.ReactNode }) {

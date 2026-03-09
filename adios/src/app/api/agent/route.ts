@@ -5,12 +5,12 @@ import {
   stopAgent,
   simulateRisk,
   resetAgent,
-} from "@/lib/agent";
+} from "@/lib/guardian/agent";
 import {
   DEFAULT_POOL_ADDRESS,
   DEFAULT_RISK_THRESHOLD,
   DEFAULT_POLL_INTERVAL,
-} from "@/lib/config";
+} from "@/lib/shared/config";
 import type { RiskAssessment } from "@/types";
 
 export async function GET() {

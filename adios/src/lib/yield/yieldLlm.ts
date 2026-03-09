@@ -1,5 +1,5 @@
 import type { YieldPool, YieldPosition, YieldLLMDecision } from "@/types";
-import { MIN_APY_DIFF_TO_MOVE, YIELD_CHAINS } from "./config";
+import { MIN_APY_DIFF_TO_MOVE, YIELD_CHAINS } from "../shared/config";
 
 export async function getYieldDecision(
   currentPosition: YieldPosition | null,

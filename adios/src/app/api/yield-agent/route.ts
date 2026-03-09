@@ -5,8 +5,10 @@ import {
   stopYieldAgent,
   resetYieldAgent,
   setYieldMode,
-} from "@/lib/yieldAgent";
-import { DEFAULT_YIELD_POLL_INTERVAL } from "@/lib/config";
+  setAllocation,
+  fetchAgentBalances,
+} from "@/lib/yield/yieldAgent";
+import { DEFAULT_YIELD_POLL_INTERVAL } from "@/lib/shared/config";
 
 export async function GET() {
   return NextResponse.json(getYieldAgentState());
@@ -47,6 +49,17 @@ export async function POST(req: Request) {
       case "set-mode":
         setYieldMode(body.mode ?? "DRY_RUN");
         return NextResponse.json({ ok: true, mode: body.mode });
+
+      case "set-allocation":
+        if (body.amount === undefined) {
+          return NextResponse.json({ error: "amount required" }, { status: 400 });
+        }
+        setAllocation(String(body.amount));
+        return NextResponse.json({ ok: true, amount: body.amount });
+
+      case "fetch-balances":
+        await fetchAgentBalances();
+        return NextResponse.json({ ok: true });
 
       default:
         return NextResponse.json({ error: "Unknown action" }, { status: 400 });

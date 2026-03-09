@@ -115,6 +115,12 @@ export type YieldAgentStatus =
   | "ERROR"
   | "PAUSED";
 
+export interface ChainBalance {
+  usdc: string;    // raw USDC (6 decimals)
+  aToken: string;  // raw aUSDC (6 decimals)
+  total: string;   // usdc + aToken
+}
+
 export interface YieldAgentState {
   status: YieldAgentStatus;
   mode: "DRY_RUN" | "LIVE";
@@ -127,6 +133,12 @@ export interface YieldAgentState {
   scansPerformed: number;
   movesPerformed: number;
   moveHistory: YieldMoveResult[];
+  simulatedMoves: YieldMoveResult[];
+  liveMoves: YieldMoveResult[];
+  walletBalances: Record<number, ChainBalance>; // per-chain balances
+  totalBalance: string;    // sum across all chains (raw, 6 decimals)
+  allocatedAmount: string; // how much agent is allowed to manage (raw, 6 decimals). "0" = all
+  agentAddress: string;    // public address of the agent wallet
 }
 
 export interface YieldMoveResult {

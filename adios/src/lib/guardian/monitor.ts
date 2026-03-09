@@ -1,10 +1,10 @@
 import { ethers } from "ethers";
-import { UNISWAP_V3_POOL_ABI } from "./abi/uniswapV3Pool";
+import { UNISWAP_V3_POOL_ABI } from "../abi/uniswapV3Pool";
 import {
   NONFUNGIBLE_POSITION_MANAGER_ABI,
   POSITION_MANAGER_ADDRESS,
-} from "./abi/nonfungiblePositionManager";
-import { DEFAULT_RISK_THRESHOLD } from "./config";
+} from "../abi/nonfungiblePositionManager";
+import { DEFAULT_RISK_THRESHOLD } from "../shared/config";
 import type { PoolState, PositionData, RiskAssessment } from "@/types";
 
 export class PositionMonitor {

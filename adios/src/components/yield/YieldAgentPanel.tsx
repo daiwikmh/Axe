@@ -46,7 +46,7 @@ export default function YieldAgentPanel({
         </div>
         <div className="flex-1 min-w-0">
           <p className="agent-name">Yield Agent</p>
-          <p className="agent-role">Yield Hunter</p>
+          <p className="agent-role">Yielder</p>
         </div>
         <div className="agent-status">
           <div style={{

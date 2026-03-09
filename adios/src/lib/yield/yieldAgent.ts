@@ -150,7 +150,7 @@ export function startYieldAgent(config: {
   addLog({
     timestamp: Date.now(),
     level: "INFO",
-    message: `adios yield agent started [${config.mode}] — scanning every ${config.pollIntervalMs / 1000}s`,
+    message: `brahma yield agent started [${config.mode}] — scanning every ${config.pollIntervalMs / 1000}s`,
   });
   addLog({
     timestamp: Date.now(),

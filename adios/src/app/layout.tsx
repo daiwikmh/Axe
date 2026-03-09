@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "adios | Autonomous LP Guardian",
+  title: "brahma | Autonomous LP Guardian",
   description:
     "Autonomous AI agent monitoring Uniswap V3 concentrated liquidity positions with LI.FI cross-chain evacuation and MEV protection.",
 };

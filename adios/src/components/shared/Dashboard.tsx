@@ -169,9 +169,9 @@ export default function Dashboard() {
               {leftOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
             </button>
             <div>
-              <h2 className="topbar-title">{isYield ? "Yield Hunter" : "Guardian"}</h2>
+              <h2 className="topbar-title">{isYield ? "Yielder" : "Guardian"}</h2>
               <p className="topbar-sub">
-                {isYield ? "adios — Cross-Chain Yield" : "adios — Autonomous LP Guardian"}
+                {isYield ? "brahma — Cross-Chain Yield" : "brahma — Autonomous LP Guardian"}
               </p>
             </div>
           </div>

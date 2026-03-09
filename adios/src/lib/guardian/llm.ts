@@ -27,8 +27,8 @@ export async function getLLMDecision(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://adios.app",
-          "X-Title": "adios LP Guardian",
+          "HTTP-Referer": "https://brahma.app",
+          "X-Title": "brahma LP Guardian",
         },
         body: JSON.stringify({
           model:

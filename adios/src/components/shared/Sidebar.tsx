@@ -55,7 +55,7 @@ export default function Sidebar({
             <span style={isYield ? { color: "var(--neon-cyan)" } : {}}>a</span>
           </div>
           <div>
-            <h1 className="sidebar-title">adios</h1>
+            <h1 className="sidebar-title">brahma</h1>
             <p className="sidebar-subtitle" style={isYield ? { color: "var(--neon-cyan-dim)" } : {}}>
               autonomous yield
             </p>
@@ -84,7 +84,7 @@ export default function Sidebar({
               transition: "all 0.15s",
             }}
           >
-            Yield Hunter
+            Yielder
           </button>
           <button
             onClick={() => { onModeChange("guardian"); onNavigate("dashboard"); }}

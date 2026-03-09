@@ -43,7 +43,7 @@ export default function YieldControlPanel({
         </button>
       </div>
 
-      <div className="powered-by mt-4">
+      {/* <div className="powered-by mt-4">
         <p className="powered-by-label">Powered by</p>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default function YieldControlPanel({
             <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>Aave V3 Yield</span>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

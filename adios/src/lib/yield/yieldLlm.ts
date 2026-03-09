@@ -32,8 +32,8 @@ export async function getYieldDecision(
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://adios.app",
-          "X-Title": "adios yield agent",
+          "HTTP-Referer": "https://brahma.app",
+          "X-Title": "brahma yield agent",
         },
         body: JSON.stringify({
           model:

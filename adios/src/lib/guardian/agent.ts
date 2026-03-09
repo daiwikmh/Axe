@@ -90,7 +90,7 @@ export function startAgent(config: {
   addLog({
     timestamp: Date.now(),
     level: "INFO",
-    message: `adios agent started — monitoring pool ${config.poolAddress.slice(0, 10)}... every ${config.pollIntervalMs / 1000}s`,
+    message: `brahma agent started — monitoring pool ${config.poolAddress.slice(0, 10)}... every ${config.pollIntervalMs / 1000}s`,
   });
 
   if (!executor) {

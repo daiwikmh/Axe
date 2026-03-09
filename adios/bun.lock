@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "adios",
+      "name": "brahma",
       "dependencies": {
         "@lifi/sdk": "^3.15.7",
         "@metamask/sdk": "^0.34.0",

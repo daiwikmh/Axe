@@ -88,7 +88,7 @@ export class YieldBridge {
       toToken: to.usdc,
       fromAmount: amount.toString(),
       fromAddress: this.address,
-      integrator: process.env.LIFI_INTEGRATOR ?? "adios",
+      integrator: process.env.LIFI_INTEGRATOR ?? "brahma",
       slippage: 0.005, // 0.5% — tight for stablecoin-to-stablecoin
     });
 
@@ -133,7 +133,7 @@ export class YieldBridge {
       toToken: to.usdc,
       fromAmount: amount.toString(),
       fromAddress: this.address,
-      integrator: process.env.LIFI_INTEGRATOR ?? "adios",
+      integrator: process.env.LIFI_INTEGRATOR ?? "brahma",
       slippage: 0.005,
     });
 
@@ -217,7 +217,7 @@ export class YieldBridge {
       toToken: to.usdc,
       fromAmount: amount.toString(),
       fromAddress: this.address,
-      integrator: process.env.LIFI_INTEGRATOR ?? "adios",
+      integrator: process.env.LIFI_INTEGRATOR ?? "brahma",
       slippage: 0.005, // 0.5% — tight for stablecoin-to-stablecoin
     });
 

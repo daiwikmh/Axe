@@ -29,7 +29,7 @@ export function initLiFi(privateKey: string, sourceChainId: number) {
   if (!sourceTxRpc) throw new Error(`initLiFi: no txRpcUrl for chain ${sourceChainId}`);
 
   createConfig({
-    integrator: process.env.LIFI_INTEGRATOR || "adios",
+    integrator: process.env.LIFI_INTEGRATOR || "brahma",
     providers: [
       EVM({
         getWalletClient: async () =>

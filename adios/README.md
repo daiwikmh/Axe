@@ -1,12 +1,12 @@
-# adios
+# brahma
 
-**Autonomous DeFi Operations System** — a dual-mode AI agent built for the LI.FI Vibeathon. It runs two fully autonomous strategies from a single dashboard: a cross-chain USDC yield hunter powered by Aave V3 + LI.FI, and an LP position guardian that watches Uniswap V3 pools and evacuates liquidity when risk thresholds are breached.
+**Autonomous DeFi Operations System** — a dual-mode AI agent built for the LI.FI Vibeathon. It runs two fully autonomous strategies from a single dashboard: a cross-chain USDC Yielder powered by Aave V3 + LI.FI, and an LP position guardian that watches Uniswap V3 pools and evacuates liquidity when risk thresholds are breached.
 
 ---
 
 ## Modes
 
-### Yield Hunter
+### Yielder
 Continuously scans USDC yield across 10 DeFi protocols on 4 chains using the DeFiLlama API. When the best available APY on another chain beats the current position by more than 0.1%, an LLM makes the final call (MOVE / STAY / WITHDRAW). If approved, the agent:
 
 1. Withdraws USDC from the current Aave V3 position
@@ -93,7 +93,7 @@ src/
 │   │   ├── executor.ts             # Withdrawal + LI.FI bridge execution
 │   │   └── llm.ts                  # OpenRouter decisions (EVACUATE/WAIT/PARTIAL)
 │   ├── yield/
-│   │   ├── yieldAgent.ts           # Main Yield Hunter loop + state management
+│   │   ├── yieldAgent.ts           # Main Yielder loop + state management
 │   │   ├── yieldScanner.ts         # DeFiLlama multi-protocol USDC yield scanner
 │   │   ├── aaveDepositor.ts        # Aave V3 supply/withdraw via viem
 │   │   ├── yieldBridge.ts          # LI.FI bridge for yield moves
@@ -110,7 +110,7 @@ src/
 
 ## LI.FI SDK Integration
 
-adios uses the LI.FI SDK as the sole bridging layer for both modes. All cross-chain moves go through LI.FI.
+brahma uses the LI.FI SDK as the sole bridging layer for both modes. All cross-chain moves go through LI.FI.
 
 ### SDK Setup (`lib/shared/lifiClient.ts`)
 
@@ -123,7 +123,7 @@ import { createWalletClient, http } from "viem";
 initLiFi(); // safe to call multiple times — singleton guard
 ```
 
-### Yield Hunter Bridge Flow (`lib/yield/yieldBridge.ts`)
+### Yielder Bridge Flow (`lib/yield/yieldBridge.ts`)
 
 ```
 getRoutes({ fromChain, toChain, fromToken: USDC, toToken: USDC, fromAmount })
@@ -152,7 +152,7 @@ In dry run, `getStepTransaction` enriches a route step with real calldata, then 
 
 ---
 
-## Yield Hunter — Supported Protocols
+## Yielder — Supported Protocols
 
 The scanner queries DeFiLlama for USDC pools across these protocols:
 
@@ -179,7 +179,7 @@ Only `actionable: true` pools are passed to the LLM and acted on. Non-actionable
 
 ## Supported Chains
 
-### Yield Hunter
+### Yielder
 
 | Chain | Chain ID | USDC Address | Aave V3 Pool | aToken |
 |---|---|---|---|---|
@@ -224,7 +224,7 @@ TARGET_CHAIN_ID=8453                       # Chain to bridge assets to on evacua
 TARGET_ADDRESS=0x...                       # Destination wallet for evacuated funds
 
 # LI.FI
-LIFI_INTEGRATOR=adios                      # LI.FI integrator ID
+LIFI_INTEGRATOR=brahma                      # LI.FI integrator ID
 
 # OpenRouter LLM
 OPENROUTER_API_KEY=sk-or-v1-...
@@ -232,7 +232,7 @@ NEXT_PUBLIC_OPENROUTER_API_KEY=sk-or-v1-... # Exposed to client for UI display
 NEXT_PUBLIC_OPENROUTER_MODEL=nvidia/nemotron-3-nano-30b-a3b:free
 
 # App
-NEXT_PUBLIC_APP_NAME=adios
+NEXT_PUBLIC_APP_NAME=brahma
 ```
 
 ---
@@ -252,7 +252,7 @@ NEXT_PUBLIC_APP_NAME=adios
 ```bash
 # Clone
 git clone <repo-url>
-cd adios
+cd brahma
 
 # Install dependencies
 bun install

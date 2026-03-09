@@ -39,11 +39,21 @@ let cache: { data: YieldPool[]; ts: number } | null = null;
 export async function scanYields(): Promise<YieldPool[]> {
   if (cache && Date.now() - cache.ts < CACHE_TTL) return cache.data;
 
-  const res = await fetch(DEFI_LLAMA_URL, {
-    signal: AbortSignal.timeout(15000),
-  });
+  // DeFiLlama returns ~5-10MB of all pools — give it enough time, retry once on timeout
+  let res: Response | null = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      res = await fetch(DEFI_LLAMA_URL, {
+        signal: AbortSignal.timeout(30000),
+      });
+      if (res.ok) break;
+    } catch (e) {
+      if (attempt === 1) throw e;
+      // First attempt failed — retry once
+    }
+  }
 
-  if (!res.ok) throw new Error(`DeFiLlama API ${res.status}`);
+  if (!res || !res.ok) throw new Error(`DeFiLlama API ${res?.status ?? "timeout"}`);
 
   const json = await res.json();
   const pools: YieldPool[] = [];

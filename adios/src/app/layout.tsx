@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import Providers from "@/components/shared/Providers";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-sans",
@@ -16,9 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "brahma | Autonomous LP Guardian",
+  title: "brahma | Autonomous Cross-Chain Yield Agent",
   description:
-    "Autonomous AI agent monitoring Uniswap V3 concentrated liquidity positions with LI.FI cross-chain evacuation and MEV protection.",
+    "brahma scans USDC yields across Base, Arbitrum, Optimism, and Polygon — then moves your capital to the highest-earning Aave V3 pool automatically via LI.FI.",
 };
 
 export default function RootLayout({
@@ -28,10 +27,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}>
+        {children}
       </body>
     </html>
   );
